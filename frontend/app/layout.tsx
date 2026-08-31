@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CampusMart | Your Campus Marketplace",
   description: "The simplest way to buy, sell, and trade within your campus community.",
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({
