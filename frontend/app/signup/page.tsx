@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { SignIn } from "@/lib/google-auth-action";
 
 export default function SignupPage() {
   return (
@@ -65,7 +68,7 @@ export default function SignupPage() {
             </div>
 
             <button 
-              type="button" 
+              onClick={() => SignIn()}
               className="w-full flex items-center justify-center gap-2 h-12 px-4 text-[15px] font-bold rounded-sm bg-white text-[#1a202c] border border-gray-200 shadow-sm hover:bg-gray-50 hover:shadow-md transition-all cursor-pointer"
             >
               <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
