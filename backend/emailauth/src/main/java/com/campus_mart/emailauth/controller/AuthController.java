@@ -1,5 +1,6 @@
 package com.campus_mart.emailauth.controller;
 
+import com.campus_mart.emailauth.dto.LoginResponseDTO;
 import com.campus_mart.emailauth.dto.OtpRequestDTO;
 import com.campus_mart.emailauth.dto.RegisterRequestDTO;
 import com.campus_mart.emailauth.service.AuthService;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -48,8 +51,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody RegisterRequestDTO requestDTO){
-        String token = authService.login(requestDTO);
-        ResponseCookie cookie = ResponseCookie.from("token", token)
+        LoginResponseDTO responseDTO = authService.login(requestDTO);
+        if (!responseDTO.isVerified()){
+            return ResponseEntity.ok().body(Map.of(
+                    "msg",responseDTO.getMsg()
+            ));
+        }
+        ResponseCookie cookie = ResponseCookie.from("token", responseDTO.getMsg())
                 .httpOnly(true)
                 .maxAge(5 * 24 * 60 * 60)
                 .secure(false)
@@ -58,7 +66,7 @@ public class AuthController {
                 .build();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body("Logged in successfully");
+                .body(Map.of("msg", "Logged in successfully"));
     }
 
     @PostMapping("/logout")

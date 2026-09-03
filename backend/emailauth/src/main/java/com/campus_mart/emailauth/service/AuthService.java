@@ -1,5 +1,7 @@
 package com.campus_mart.emailauth.service;
 
+import com.campus_mart.emailauth.client.UserClient;
+import com.campus_mart.emailauth.dto.LoginResponseDTO;
 import com.campus_mart.emailauth.dto.OtpRequestDTO;
 import com.campus_mart.emailauth.dto.RegisterRequestDTO;
 import com.campus_mart.emailauth.exception.UserAlreadyExistsException;
@@ -27,6 +29,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final OtpService otpService;
     private final JwtService jwtService;
+    private final UserClient userClient;
 
     public ResponseEntity<?> register(RegisterRequestDTO registerRequestDTO){
         if(authRepository.findByEmail(registerRequestDTO.getEmail()).isPresent()){
@@ -37,7 +40,6 @@ public class AuthService {
                 .password(passwordEncoder.encode(registerRequestDTO.getPassword()))
                 .authMode(AuthMode.LOCAL)
                 .verified(false)
-                .onboarded(false)
                 .build();
         authRepository.save(authModel);
         otpService.generateAndSendOtp(registerRequestDTO.getEmail());
@@ -46,21 +48,33 @@ public class AuthService {
     }
 
     public String verifyOtp(OtpRequestDTO otpRequestDTO){
-        return  otpService.verifyOtp(otpRequestDTO);
+        String token = otpService.verifyOtp(otpRequestDTO);
+        userClient.createUser(token);
+        return token;
     }
 
-    public String login(RegisterRequestDTO requestDTO){
+    public LoginResponseDTO login(RegisterRequestDTO requestDTO){
         AuthModel authModel = authRepository.findByEmail(requestDTO.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User does not exist"));
-        if(!authModel.isVerified()){
-            otpService.generateAndSendOtp(requestDTO.getEmail());
-            return "Verification code sent to you email";
-        }
+
         if (!passwordEncoder.matches(requestDTO.getPassword(), authModel.getPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
+
+        if(!authModel.isVerified()){
+            otpService.generateAndSendOtp(requestDTO.getEmail());
+
+            return LoginResponseDTO.builder()
+                    .msg("Verification code sent to you email")
+                    .isVerified(false)
+                    .build();
+        }
+
         String token = jwtService.generateToken(requestDTO.getEmail());
-        return token;
+        return LoginResponseDTO.builder()
+                .msg(token)
+                .isVerified(true)
+                .build();
     }
 
     @Transactional

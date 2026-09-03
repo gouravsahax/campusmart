@@ -1,6 +1,7 @@
 package com.campus_mart.emailauth.utils;
 
 import com.campus_mart.emailauth.repository.OtpRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ public class OtpCleanupScheduler {
 
     private final OtpRepository otpRepository;
 
+    @Transactional
     @Scheduled(fixedRate = 3600000) // every hour
     public void cleanupExpiredOtp() {
         otpRepository.deleteByExpiryTimeBefore(LocalDateTime.now());
