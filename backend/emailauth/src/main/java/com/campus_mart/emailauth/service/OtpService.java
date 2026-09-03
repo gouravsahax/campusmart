@@ -48,7 +48,7 @@ public class OtpService {
         simpleMailMessage.setText(
                 "Hello,\n\n" +
                         "Thank you for signing up for CampusMart!\n\n" +
-                        "Your verification code is: " + otp + "\n\n" +
+                        "Your verification code is: " + generatedOtp + "\n\n" +
                         "This code is valid for 5 minutes.\n" +
                         "Please do not share this code with anyone.\n\n" +
                         "If you did not request this verification, you can safely ignore this email.\n\n" +

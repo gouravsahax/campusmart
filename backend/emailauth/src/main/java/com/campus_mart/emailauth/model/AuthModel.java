@@ -27,6 +27,4 @@ public class AuthModel {
     private AuthMode authMode;
 
     private boolean verified;
-
-    private boolean onboarded;
 }
